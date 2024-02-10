@@ -36,6 +36,9 @@ const Home = observer(function Home() {
   </body>
 </html>`}
       />
+      {generator.isGenerating && (
+        <div className="fixed inset-0 m-auto">Generating...</div>
+      )}
       <div className="fixed bottom-4 left-0 right-0 mx-auto w-[640px] h-32 rounded-2xl shadow-lg">
         <textarea
           className="absolute w-full h-full border border-gray-300 p-4 rounded-2xl resize-none"
