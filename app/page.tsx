@@ -21,10 +21,11 @@ const Home = observer(function Home() {
   const [prompt, setPrompt] = useState("");
 
   return (
-    <main className="text-gray-800">
-      <iframe
-        className="w-screen h-screen"
-        srcDoc={`
+    <main className="text-gray-800 w-screen h-screen flex flex-col p-4 gap-4">
+      <div className="flex-1 self-stretch flex">
+        <iframe
+          className="flex-1 self-stretch border border-gray-300 rounded"
+          srcDoc={`
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -35,11 +36,12 @@ const Home = observer(function Home() {
   ${generator.result}
   </body>
 </html>`}
-      />
+        />
+      </div>
       {generator.isGenerating && (
         <div className="fixed inset-0 m-auto">Generating...</div>
       )}
-      <div className="fixed bottom-4 left-0 right-0 mx-auto w-[640px] h-32 rounded-2xl shadow-lg">
+      <div className="mx-auto w-[640px] h-32 rounded-2xl shadow-lg relative">
         <textarea
           className="absolute w-full h-full border border-gray-300 p-4 rounded-2xl resize-none"
           value={prompt}
