@@ -155,6 +155,7 @@ class SingleGenerator {
       style: "vivid",
       quality: "hd",
     });
+    await new Promise((resolve) => setTimeout(resolve, 20000)); // 5 images per minute
     return "data:image/png;base64," + completion.data[0].b64_json;
   }
 
