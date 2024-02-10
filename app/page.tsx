@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Icon } from "@iconify/react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -61,7 +62,9 @@ export default function Home() {
                 </div>
               </div>
               <DialogFooter>
-                <Button>Save changes</Button>
+                <DialogClose asChild>
+                  <Button>Close</Button>
+                </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>
