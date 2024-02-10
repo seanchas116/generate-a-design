@@ -22,21 +22,27 @@ const Home = observer(function Home() {
 
   return (
     <main className="text-gray-800 w-screen h-screen flex flex-col p-4 gap-4">
-      <div className="flex-1 self-stretch flex">
-        <iframe
-          className="flex-1 self-stretch border border-gray-300 rounded"
-          srcDoc={`
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body>
-  ${generator.result}
-  </body>
-</html>`}
-        />
+      <div className="flex-1 self-stretch flex gap-4">
+        {
+          // 3 times
+          Array.from({ length: 3 }).map((_, index) => (
+            <iframe
+              key={index}
+              className="flex-1 self-stretch border border-gray-300 rounded"
+              srcDoc={`
+                <!DOCTYPE html>
+                <html lang="en">
+                  <head>
+                    <meta charset="UTF-8" />
+                    <script src="https://cdn.tailwindcss.com"></script>
+                  </head>
+                  <body>
+                  ${generator.result}
+                  </body>
+                </html>`}
+            />
+          ))
+        }
       </div>
       {generator.isGenerating && (
         <div className="fixed inset-0 m-auto">Generating...</div>
