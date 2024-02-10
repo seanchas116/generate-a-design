@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { observer } from "mobx-react-lite";
-import { generator } from "./Generator";
+import { generator } from "../lib/Generator";
 import { action } from "mobx";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
