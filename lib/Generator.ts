@@ -3,6 +3,10 @@
 import OpenAI from "openai";
 import dedent from "dedent";
 import { observable, makeObservable, runInAction } from "mobx";
+import { fromHtml } from "hast-util-from-html";
+import { toHtml } from "hast-util-to-html";
+
+import { Element } from "hast";
 
 class Preferences {
   constructor() {}
@@ -95,7 +99,12 @@ class SingleGenerator {
 
       const wireframe = await this.generateWireframe(prompt, outline);
 
-      const result = getHTMLInOutput(wireframe) ?? "";
+      const result = await this.generateImages(
+        getHTMLInOutput(wireframe) ?? ""
+      );
+
+      // Find img tags and replace with AI generated images
+
       runInAction(() => {
         this.progress = 100;
         this.result = result;
@@ -105,6 +114,48 @@ class SingleGenerator {
         this.isRunning = false;
       });
     }
+  }
+
+  async generateImages(html: string): Promise<string> {
+    const tree = fromHtml(html, { fragment: true });
+
+    const visit = async (element: Element) => {
+      if (element.tagName === "img") {
+        console.log(element.properties.src, element.properties.alt);
+        if (element.properties.alt) {
+          element.properties.src = await this.generateImage(
+            String(element.properties.alt)
+          );
+        }
+      }
+
+      await Promise.all(
+        (element.children || []).map(
+          (child) => child.type === "element" && visit(child)
+        )
+      );
+    };
+
+    await Promise.all(
+      (tree.children || []).map(
+        (child) => child.type === "element" && visit(child)
+      )
+    );
+
+    return toHtml(tree);
+  }
+
+  async generateImage(prompt: string) {
+    const completion = await this.openAI.images.generate({
+      prompt: prompt,
+      model: "dall-e-3",
+      n: 1,
+      response_format: "b64_json",
+      size: "512x512",
+      style: "vivid",
+      quality: "hd",
+    });
+    return "data:image/png;base64," + completion.data[0].b64_json;
   }
 
   async generateOutline(prompt: string) {
