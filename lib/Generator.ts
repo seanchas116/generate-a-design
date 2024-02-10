@@ -151,7 +151,7 @@ class SingleGenerator {
       model: "dall-e-3",
       n: 1,
       response_format: "b64_json",
-      size: "512x512",
+      size: "1024x1024",
       style: "vivid",
       quality: "hd",
     });
