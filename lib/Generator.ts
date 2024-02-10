@@ -33,7 +33,7 @@ const systemMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
     
     In the third response, generate the final take of the HTML code.
     
-    Use many images. <img> src attributes should be "https://via.placeholder.com/[width]x[height]". alt attributes should include long detailed descriptions for AI generation prompts.
+    Use many images. <img> src attributes should be "https://picsum.photos/[width]/[height]". alt attributes should include long detailed descriptions for AI generation prompts.
 
     Generate clean and modern design. Do not generate unnecessary shadow.
 
@@ -94,16 +94,20 @@ class SingleGenerator {
 
       const outline = await this.generateOutline(prompt);
       runInAction(() => {
-        this.progress = 50;
+        this.progress = 33;
       });
 
       const wireframe = await this.generateWireframe(prompt, outline);
+      runInAction(() => {
+        this.progress = 66;
+      });
 
-      const result = await this.generateImages(
-        getHTMLInOutput(wireframe) ?? ""
+      const finalHTML = await this.generateFinalHTML(
+        prompt,
+        outline,
+        wireframe
       );
-
-      // Find img tags and replace with AI generated images
+      const result = getHTMLInOutput(finalHTML) ?? "";
 
       runInAction(() => {
         this.progress = 100;
@@ -187,6 +191,29 @@ class SingleGenerator {
         {
           role: "assistant",
           content: outline,
+        },
+      ],
+      stream: true,
+    });
+    return collectStream(stream);
+  }
+
+  async generateFinalHTML(prompt: string, outline: string, wireframe: string) {
+    const stream = await this.openAI.chat.completions.create({
+      model: "gpt-4-turbo-preview",
+      messages: [
+        systemMessage,
+        {
+          role: "user",
+          content: prompt,
+        },
+        {
+          role: "assistant",
+          content: outline,
+        },
+        {
+          role: "assistant",
+          content: wireframe,
         },
       ],
       stream: true,
