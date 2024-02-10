@@ -42,9 +42,7 @@ class ChatGenerator {
   }
 
   @observable _apiKey = preferences.apiKey;
-  @observable result = "";
-
-  @observable isGenerating = false;
+  @observable.ref results: [string, string, string] = ["", "", ""];
 
   get apiKey() {
     return this._apiKey;
@@ -63,19 +61,16 @@ class ChatGenerator {
   }
 
   async generate(prompt: string) {
-    try {
-      this.isGenerating = true;
-
-      const outline = await this.generateOutline(prompt);
-      const wireframe = await this.generateWireframe(prompt, outline);
-      runInAction(() => {
-        this.result = getHTMLInOutput(wireframe) ?? "";
-      });
-    } finally {
-      runInAction(() => {
-        this.isGenerating = false;
-      });
-    }
+    const results = await Promise.all(
+      [0, 0, 0].map(async () => {
+        const outline = await this.generateOutline(prompt);
+        const wireframe = await this.generateWireframe(prompt, outline);
+        return getHTMLInOutput(wireframe) ?? "";
+      })
+    );
+    runInAction(() => {
+      this.results = results as [string, string, string];
+    });
   }
 
   async generateOutline(prompt: string) {

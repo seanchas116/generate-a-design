@@ -37,16 +37,13 @@ const Home = observer(function Home() {
                     <script src="https://cdn.tailwindcss.com"></script>
                   </head>
                   <body>
-                  ${generator.result}
+                  ${generator.results[index]}
                   </body>
                 </html>`}
             />
           ))
         }
       </div>
-      {generator.isGenerating && (
-        <div className="fixed inset-0 m-auto">Generating...</div>
-      )}
       <div className="mx-auto w-[640px] h-32 rounded-2xl shadow-lg relative">
         <textarea
           className="absolute w-full h-full border border-gray-300 p-4 rounded-2xl resize-none"
