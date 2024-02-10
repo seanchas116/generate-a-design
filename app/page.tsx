@@ -68,14 +68,25 @@ class ChatGenerator {
     preferences.apiKey = apiKey;
   }
 
-  async generate(prompt: string) {
-    const openai = new OpenAI({
+  get openAI() {
+    return new OpenAI({
       apiKey: this.apiKey,
       dangerouslyAllowBrowser: true,
     });
+  }
 
-    const stream = await openai.chat.completions.create({
+  async generate(prompt: string) {
+    const outline = await this.generateOutline(prompt);
+    const wireframe = await this.generateWireframe(prompt, outline);
+    runInAction(() => {
+      this.result = getHTMLInOutput(wireframe) ?? "";
+    });
+  }
+
+  async generateOutline(prompt: string) {
+    const stream = await this.openAI.chat.completions.create({
       model: "gpt-4-turbo-preview",
+      max_tokens: 4095,
       messages: [
         systemMessage,
         {
@@ -85,16 +96,46 @@ class ChatGenerator {
       ],
       stream: true,
     });
+    return collectStream(stream);
+  }
 
-    const chunks: string[] = [];
-
-    for await (const chunk of stream) {
-      chunks.push(chunk.choices[0]?.delta?.content || "");
-    }
-
-    runInAction(() => {
-      this.result = chunks.join("");
+  async generateWireframe(prompt: string, outline: string) {
+    const stream = await this.openAI.chat.completions.create({
+      model: "gpt-4-turbo-preview",
+      messages: [
+        systemMessage,
+        {
+          role: "user",
+          content: prompt,
+        },
+        {
+          role: "assistant",
+          content: outline,
+        },
+      ],
+      stream: true,
     });
+    return collectStream(stream);
+  }
+}
+
+async function collectStream(
+  stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
+): Promise<string> {
+  const chunks: string[] = [];
+
+  for await (const chunk of stream) {
+    chunks.push(chunk.choices[0]?.delta?.content || "");
+  }
+
+  return chunks.join("");
+}
+
+function getHTMLInOutput(output: string): string | undefined {
+  // Find ```html\n${output}\n```
+  const match = output.match(/```html\n([\s\S]+?)\n```/);
+  if (match) {
+    return match[1];
   }
 }
 
@@ -104,6 +145,20 @@ const Home = observer(function Home() {
 
   return (
     <main className="text-gray-800">
+      <iframe
+        className="w-screen h-screen"
+        srcDoc={`
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+  ${generator.result}
+  </body>
+</html>`}
+      />
       <div className="whitespace-pre-wrap">{generator.result}</div>
       <div className="fixed bottom-4 left-0 right-0 mx-auto w-[640px] h-32 rounded-2xl shadow-lg">
         <textarea
