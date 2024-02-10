@@ -30,15 +30,16 @@ const systemMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
     In the first response, generate the outline of the website content.
     
     In the second response, generate the wireframe in HTML code.
-    
-    In the third response, generate the final take of the HTML code.
-    
+
+    In the third response, generate the HTML code with sophisticated design and wording.
+
     Use many images. <img> src attributes should be "https://picsum.photos/[width]/[height]". alt attributes should include long detailed descriptions for AI generation prompts.
 
     Generate clean and modern design. Do not generate unnecessary shadow.
 
     Output format: HTML with Tailwind classes
     Output without <html> and <body> tags.
+    Always output code. Do not output complains or errors.
   `,
 };
 
@@ -99,19 +100,21 @@ class SingleGenerator {
 
       const wireframe = await this.generateWireframe(prompt, outline);
       runInAction(() => {
+        this.result = wireframe;
         this.progress = 66;
       });
 
-      const finalHTML = await this.generateFinalHTML(
-        prompt,
-        outline,
-        wireframe
-      );
-      const result = getHTMLInOutput(finalHTML) ?? "";
+      const takes = [wireframe];
+
+      for (let i = 0; i < 1; i++) {
+        const result = await this.generateFinalHTML(prompt, outline, takes);
+        takes.push(result);
+        this.result = getHTMLInOutput(result) ?? "";
+        console.log(result, this.result);
+      }
 
       runInAction(() => {
         this.progress = 100;
-        this.result = result;
       });
     } finally {
       runInAction(() => {
@@ -198,7 +201,7 @@ class SingleGenerator {
     return collectStream(stream);
   }
 
-  async generateFinalHTML(prompt: string, outline: string, wireframe: string) {
+  async generateFinalHTML(prompt: string, outline: string, takes: string[]) {
     const stream = await this.openAI.chat.completions.create({
       model: "gpt-4-turbo-preview",
       messages: [
@@ -211,10 +214,10 @@ class SingleGenerator {
           role: "assistant",
           content: outline,
         },
-        {
-          role: "assistant",
-          content: wireframe,
-        },
+        ...takes.map((take) => ({
+          role: "assistant" as const,
+          content: take,
+        })),
       ],
       stream: true,
     });
