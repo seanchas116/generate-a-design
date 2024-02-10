@@ -16,6 +16,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
+class Preferences {
+  constructor() {}
+
+  get apiKey(): string {
+    return localStorage.getItem("openai-api-key") || "";
+  }
+
+  set apiKey(apiKey: string) {
+    this.apiKey = apiKey;
+    localStorage.setItem("openai-api-key", apiKey);
+  }
+}
+
+const preferences = new Preferences();
+
 function generate(options: { apiKey: string; prompt: string }) {
   const openai = new OpenAI({
     apiKey: options.apiKey,
@@ -24,7 +39,7 @@ function generate(options: { apiKey: string; prompt: string }) {
 }
 
 export default function Home() {
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState(preferences.apiKey);
   const [prompt, setPrompt] = useState("");
 
   return (
@@ -56,7 +71,11 @@ export default function Home() {
                     className="col-span-3"
                     type="text"
                     value={apiKey}
-                    onChange={(event) => setApiKey(event.target.value)}
+                    onChange={(event) => {
+                      const apiKey = event.target.value;
+                      preferences.apiKey = apiKey;
+                      setApiKey(apiKey);
+                    }}
                     placeholder="sk-****"
                   />
                 </div>
