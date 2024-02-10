@@ -17,11 +17,12 @@ import { Button } from "@/components/ui/button";
 import { observer } from "mobx-react-lite";
 import { generator } from "../lib/Generator";
 import { action } from "mobx";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 const Home = observer(function Home() {
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(
+    "React Developer portfolio website design."
+  );
 
   return (
     <main className="text-gray-800 w-screen h-screen flex flex-col p-4 gap-4">
@@ -31,7 +32,7 @@ const Home = observer(function Home() {
           generator.generators.map((gen, index) => (
             <div
               key={index}
-              className="relative flex flex-1 self-stretch border border-gray-300 rounded overflow-hidden"
+              className="relative flex flex-1 self-stretch border border-gray-300 rounded-lg overflow-hidden"
             >
               <iframe
                 key={index}

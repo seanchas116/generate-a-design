@@ -29,8 +29,7 @@ const systemMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
     
     In the third response, generate the final take of the HTML code.
     
-    Use many images. <img> tags contain width, height and detailed alt text for DALL-E.
-    Utilize elements with background images. Emit bg-[url()] classes.
+    Use many images. <img> src attributes should be "https://via.placeholder.com/[width]x[height]". alt attributes should include long detailed descriptions for AI generation prompts.
 
     Generate clean and modern design. Do not generate unnecessary shadow.
 
