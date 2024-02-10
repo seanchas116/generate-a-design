@@ -42,7 +42,12 @@ class ChatGenerator {
   }
 
   @observable _apiKey = preferences.apiKey;
-  @observable.ref results: [string, string, string] = ["", "", ""];
+
+  readonly generators = [
+    new SingleGenerator(() => this.openAI),
+    new SingleGenerator(() => this.openAI),
+    new SingleGenerator(() => this.openAI),
+  ];
 
   get apiKey() {
     return this._apiKey;
@@ -59,18 +64,45 @@ class ChatGenerator {
       dangerouslyAllowBrowser: true,
     });
   }
+}
+
+class SingleGenerator {
+  constructor(getOpenAI: () => OpenAI) {
+    this.getOpenAI = getOpenAI;
+    makeObservable(this);
+  }
+
+  readonly getOpenAI: () => OpenAI;
+  @observable result = "";
+  @observable progress = 0;
+  @observable isRunning = false;
+
+  get openAI() {
+    return this.getOpenAI();
+  }
 
   async generate(prompt: string) {
-    const results = await Promise.all(
-      [0, 0, 0].map(async () => {
-        const outline = await this.generateOutline(prompt);
-        const wireframe = await this.generateWireframe(prompt, outline);
-        return getHTMLInOutput(wireframe) ?? "";
-      })
-    );
-    runInAction(() => {
-      this.results = results as [string, string, string];
-    });
+    try {
+      this.progress = 0;
+      this.isRunning = true;
+
+      const outline = await this.generateOutline(prompt);
+      runInAction(() => {
+        this.progress = 50;
+      });
+
+      const wireframe = await this.generateWireframe(prompt, outline);
+
+      const result = getHTMLInOutput(wireframe) ?? "";
+      runInAction(() => {
+        this.progress = 100;
+        this.result = result;
+      });
+    } finally {
+      runInAction(() => {
+        this.isRunning = false;
+      });
+    }
   }
 
   async generateOutline(prompt: string) {

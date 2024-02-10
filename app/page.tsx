@@ -16,6 +16,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { observer } from "mobx-react-lite";
 import { generator } from "./Generator";
+import { action } from "mobx";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 const Home = observer(function Home() {
   const [prompt, setPrompt] = useState("");
@@ -25,11 +28,15 @@ const Home = observer(function Home() {
       <div className="flex-1 self-stretch flex gap-4">
         {
           // 3 times
-          Array.from({ length: 3 }).map((_, index) => (
-            <iframe
+          generator.generators.map((gen, index) => (
+            <div
               key={index}
-              className="flex-1 self-stretch border border-gray-300 rounded"
-              srcDoc={`
+              className="relative flex flex-1 self-stretch border border-gray-300 rounded overflow-hidden"
+            >
+              <iframe
+                key={index}
+                className={cn("w-full h-full", gen.isRunning && "opacity-50")}
+                srcDoc={`
                 <!DOCTYPE html>
                 <html lang="en">
                   <head>
@@ -37,10 +44,16 @@ const Home = observer(function Home() {
                     <script src="https://cdn.tailwindcss.com"></script>
                   </head>
                   <body>
-                  ${generator.results[index]}
+                  ${gen.result}
                   </body>
                 </html>`}
-            />
+              />
+              {gen.isRunning && (
+                <div className="absolute inset-8 m-auto opacity-50">
+                  Generating {gen.progress}%
+                </div>
+              )}
+            </div>
           ))
         }
       </div>
@@ -88,9 +101,11 @@ const Home = observer(function Home() {
           </Dialog>
           <button
             className="bg-blue-500 text-white p-2 rounded-xl"
-            onClick={async () => {
-              await generator.generate(prompt);
-            }}
+            onClick={action(() => {
+              for (const gen of generator.generators) {
+                gen.generate(prompt);
+              }
+            })}
           >
             Generate
           </button>
