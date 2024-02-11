@@ -37,8 +37,7 @@ const systemMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
 
     Generate clean and modern design. Do not generate unnecessary shadow.
 
-    Output format: HTML with Tailwind classes
-    Output without <html> and <body> tags.
+    Output format: HTML with Tailwind classes. Generate minified HTML without html/body tags.
     Always output code. Do not output complains or errors.
   `,
 };
@@ -97,10 +96,12 @@ class SingleGenerator {
       runInAction(() => {
         this.progress = 33;
       });
+      console.log(outline);
 
       const wireframe = await this.generateWireframe(prompt, outline);
       runInAction(() => {
-        this.result = wireframe;
+        this.result = getHTMLInOutput(wireframe) ?? "";
+        console.log(wireframe);
         this.progress = 66;
       });
 
@@ -108,9 +109,9 @@ class SingleGenerator {
 
       for (let i = 0; i < 1; i++) {
         const result = await this.generateFinalHTML(prompt, outline, takes);
+        console.log(result);
         takes.push(result);
         this.result = getHTMLInOutput(result) ?? "";
-        console.log(result, this.result);
       }
 
       runInAction(() => {

@@ -44,7 +44,7 @@ const Home = observer(function Home() {
                     <meta charset="UTF-8" />
                     <script src="https://cdn.tailwindcss.com"></script>
                   </head>
-                  <body style="zoom:0.5;">
+                  <body>
                   ${gen.result}
                   </body>
                 </html>`}
