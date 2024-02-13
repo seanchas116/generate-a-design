@@ -154,7 +154,23 @@ class SingleGenerator {
         console.log(element.properties.src, element.properties.alt);
         if (element.properties.alt) {
           element.properties.src = await this.generateImage(
-            String(element.properties.alt)
+            `Image for ${prompt}: ${element.properties.alt}`
+          );
+        }
+      }
+
+      if (typeof element.properties.style === "string") {
+        // If style contains background-image, replace it with generated image
+        const match = element.properties.style.match(
+          /background-image:\s*url\(([^)]+)\)/
+        );
+        if (match) {
+          console.log(element);
+          element.properties.style = element.properties.style.replace(
+            /background-image:\s*url\([^)]+\)/,
+            `background-image: url(${await this.generateImage(
+              `Image for ${prompt}: ${element.properties.ariaLabel}`
+            )})`
           );
         }
       }
