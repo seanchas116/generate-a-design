@@ -115,6 +115,8 @@ class SingleGenerator {
         this.result = getHTMLInOutput(result) ?? "";
       }
 
+      this.result = await this.generateImages(this.result);
+
       runInAction(() => {
         this.progress = 100;
       });
@@ -130,6 +132,20 @@ class SingleGenerator {
 
     const visit = async (element: Element) => {
       if (element.tagName === "img") {
+        if (element.properties.src) {
+          // src should be https://picsum.photos/[width]/[height]
+          // get width and height
+          const src = element.properties.src as string;
+          const match = src.match(/picsum\.photos\/(\d+)\/(\d+)/);
+          if (match) {
+            const width = match[1];
+            const height = match[2];
+            console.log(width, height);
+            element.properties.width = width;
+            element.properties.height = height;
+          }
+        }
+
         console.log(element.properties.src, element.properties.alt);
         if (element.properties.alt) {
           element.properties.src = await this.generateImage(
@@ -155,17 +171,59 @@ class SingleGenerator {
   }
 
   async generateImage(prompt: string) {
-    const completion = await this.openAI.images.generate({
-      prompt: prompt,
-      model: "dall-e-3",
-      n: 1,
-      response_format: "b64_json",
-      size: "1024x1024",
-      style: "vivid",
-      quality: "hd",
-    });
-    await new Promise((resolve) => setTimeout(resolve, 20000)); // 5 images per minute
-    return "data:image/png;base64," + completion.data[0].b64_json;
+    // const completion = await this.openAI.images.generate({
+    //   prompt: prompt,
+    //   model: "dall-e-3",
+    //   n: 1,
+    //   response_format: "b64_json",
+    //   size: "1024x1024",
+    //   style: "vivid",
+    //   quality: "hd",
+    // });
+    // await new Promise((resolve) => setTimeout(resolve, 20000)); // 5 images per minute
+    // return "data:image/png;base64," + completion.data[0].b64_json;
+
+    const engineId = "stable-diffusion-v1-6";
+    const apiHost = "https://api.stability.ai";
+    const apiKey = process.env.NEXT_PUBLIC_STABILITY_API_KEY;
+
+    const response = await fetch(
+      `${apiHost}/v1/generation/${engineId}/text-to-image`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          text_prompts: [{ text: prompt }],
+          cfg_scale: 7,
+          height: 1024,
+          width: 1024,
+          steps: 30,
+          samples: 1,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Non-200 response: ${await response.text()}`);
+    }
+
+    interface GenerationResponse {
+      artifacts: Array<{
+        base64: string;
+        seed: number;
+        finishReason: string;
+      }>;
+    }
+
+    const responseJSON = (await response.json()) as GenerationResponse;
+
+    const base64 = responseJSON.artifacts[0].base64;
+
+    return "data:image/png;base64," + base64;
   }
 
   async generateOutline(prompt: string) {
