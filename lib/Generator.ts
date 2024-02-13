@@ -31,9 +31,10 @@ const systemMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
     
     In the second response, generate the wireframe in HTML code.
 
-    In the third response, generate the HTML code with sophisticated design and wording.
+    In the third response, generate the HTML code with fanciest design and wording.
 
-    Use many images. <img> src attributes should be "https://picsum.photos/[width]/[height]". alt attributes should include long detailed descriptions for AI generation prompts.
+    Use many images. <img> src attributes should be "https://picsum.photos/[width]/[height]". 
+    Set long detailed descriptions for images for later AI generation. Set them to alt attribute (for <img>) or aria-label (for background images).
 
     Generate clean and modern design. Do not generate unnecessary shadow.
 
