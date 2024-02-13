@@ -137,12 +137,17 @@ class SingleGenerator {
           // get width and height
           const src = element.properties.src as string;
           const match = src.match(/picsum\.photos\/(\d+)\/(\d+)/);
+          const match2 = src.match(/picsum\.photos\/(\d+)/);
           if (match) {
             const width = match[1];
             const height = match[2];
             console.log(width, height);
             element.properties.width = width;
             element.properties.height = height;
+          } else if (match2) {
+            const width = match2[1];
+            console.log(width);
+            element.properties.width = width;
           }
         }
 
