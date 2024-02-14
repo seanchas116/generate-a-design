@@ -36,7 +36,10 @@ const Home = observer(function Home() {
             >
               <iframe
                 key={index}
-                className={cn("w-full h-full", gen.isRunning && "opacity-50")}
+                className={cn(
+                  "absolute inset-0 w-[200%] h-[200%] scale-[0.5] origin-top-left",
+                  gen.isRunning && "opacity-50"
+                )}
                 srcDoc={`
                 <!DOCTYPE html>
                 <html lang="en">
